@@ -11,11 +11,14 @@ class Variable:
         self.creater = func
 
     def backward(self):
-        f = self.creater
-        if f is not None:
-            x = f.input
-            x.grad = f.backward(self.grad)
-            x.backward()
+        funcs = [self.creater]
+        while funcs:
+            f = funcs.pop()
+            x, y = f.input, f.output
+            x.grad = f.backward(y.grad)
+            if x.creater is not None:
+                funcs.append(x.creater)
+
 
 class Function:
     def __call__(self, input):
@@ -54,14 +57,6 @@ class Exp(Function):
         return gx
 
 
-def numerical_diff(f, x, eps=1e-4):
-    x0 = Variable(x.data - eps)
-    x1 = Variable(x.data + eps)
-    y0 = f(x0)
-    y1 = f(x1)
-    return (y1.data - y0.data) / (2 * eps)
-
-
 A = Square()
 B = Exp()
 C = Square()
@@ -70,13 +65,6 @@ x = Variable(np.array(0.5))
 a = A(x)
 b = B(a)
 y = C(b)
-
-assert y.creater == C
-assert y.creater.input == b
-assert y.creater.input.creater == B
-assert y.creater.input.creater.input == a
-assert y.creater.input.creater.input.creater == A
-assert y.creater.input.creater.input.creater.input == x
 
 y.grad = np.array(1.0)
 y.backward()
