@@ -28,49 +28,23 @@ class Variable:
 
 
 class Function:
-    def __call__(self, inputs):
+    def __call__(self, *inputs):
         xs = [x.data for x in inputs]
-        ys = self.forward(xs)
+        ys = self.forward(*xs)
+        if not isinstance(ys, tuple):
+            ys = (ys,)
         outputs = [Variable(as_array(y)) for y in ys]
         for output in outputs:
             output.set_creater(self)
         self.inputs = inputs
         self.outputs = outputs
-        return outputs
+        return outputs if len(outputs) > 1 else outputs[0]
 
     def forward(self, x):
         raise NotImplementedError()
 
     def backward(self, gy):
         raise NotImplementedError()
-
-
-class Square(Function):
-    def forward(self, x):
-        return x ** 2
-
-    def backward(self, gy):
-        x = self.input.data
-        gx = 2 * x * gy
-        return gx
-
-
-class Exp(Function):
-    def forward(self, x):
-        return np.exp(x)
-
-    def backward(self, gy):
-        x = self.input.data
-        gx = np.exp(x) * gy
-        return gx
-
-
-def square(x):
-    return Square()(x)
-
-
-def exp(x):
-    return Exp()(x)
 
 
 def as_array(x):
@@ -80,14 +54,16 @@ def as_array(x):
 
 
 class Add(Function):
-    def forward(self, xs):
-        x0, x1 = xs
+    def forward(self, x0, x1):
         y = x0 + x1
-        return (y,)
+        return y
 
 
-xs = [Variable(np.array(2)), Variable(np.array(3))]
-f = Add()
-ys = f(xs)
-y = ys[0]
+def add(x0, x1):
+    return Add()(x0, x1)
+
+
+x0 = Variable(np.array(2))
+x1 = Variable(np.array(3))
+y = add(x0, x1)
 print(y.data)
