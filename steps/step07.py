@@ -5,14 +5,26 @@ class Variable:
     def __init__(self, data):
         self.data = data
         self.grad = None
+        self.creater = None
 
+    def set_creater(self, func):
+        self.creater = func
+
+    def backward(self):
+        f = self.creater
+        if f is not None:
+            x = f.input
+            x.grad = f.backward(self.grad)
+            x.backward()
 
 class Function:
     def __call__(self, input):
         x = input.data
         y = self.forward(x)
         output = Variable(y)
+        output.set_creater(self)
         self.input = input
+        self.output = output
         return output
 
     def forward(self, x):
@@ -59,18 +71,13 @@ a = A(x)
 b = B(a)
 y = C(b)
 
+assert y.creater == C
+assert y.creater.input == b
+assert y.creater.input.creater == B
+assert y.creater.input.creater.input == a
+assert y.creater.input.creater.input.creater == A
+assert y.creater.input.creater.input.creater.input == x
+
 y.grad = np.array(1.0)
-b.grad = C.backward(y.grad)
-a.grad = B.backward(b.grad)
-x.grad = A.backward(a.grad)
-
-
-def f(x):
-    A = Square()
-    B = Exp()
-    C = Square()
-    return C(B(A(x)))
-
-
+y.backward()
 print(x.grad)
-print(numerical_diff(f, x))
