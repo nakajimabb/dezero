@@ -10,9 +10,11 @@ class Variable:
         self.data = data
         self.grad = None
         self.creater = None
+        self.generation = 0
 
     def set_creater(self, func):
         self.creater = func
+        self.generation = func.generation + 1
 
     def cleargrad(self):
         self.grad = None
@@ -21,7 +23,16 @@ class Variable:
         if self.grad is None:
             self.grad = np.ones_like(self.data)
 
-        funcs = [self.creater]
+        funcs = []
+        seen_set = set()
+
+        def add_func(f):
+            if f not in seen_set:
+                funcs.append(f)
+                seen_set.add(f)
+                funcs.sort(key=lambda x: x.generation)
+
+        add_func(self.creater)
         while funcs:
             f = funcs.pop()
             gys = [output.grad for output in f.outputs]
@@ -34,7 +45,7 @@ class Variable:
                 else:
                     x.grad = x.grad + gx
                 if x.creater is not None:
-                    funcs.append(x.creater)
+                    add_func(x.creater)
 
 
 class Function:
@@ -44,6 +55,7 @@ class Function:
         if not isinstance(ys, tuple):
             ys = (ys,)
         outputs = [Variable(as_array(y)) for y in ys]
+        self.generation = max([x.generation for x in inputs])
         for output in outputs:
             output.set_creater(self)
         self.inputs = inputs
@@ -90,13 +102,10 @@ def square(x):
     return Square()(x)
 
 
-x = Variable(np.array(3.0))
-y = add(x, x)
-y.backward()
-print(x.grad)
-
-x.cleargrad()
-y = add(add(x, x), x)
+x = Variable(np.array(2.0))
+a = square(x)
+y = add(square(a), square(a))
 y.backward()
 
+print(y.data)
 print(x.grad)
