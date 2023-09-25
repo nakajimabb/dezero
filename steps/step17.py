@@ -1,4 +1,5 @@
 import numpy as np
+import weakref
 
 
 class Variable:
@@ -35,7 +36,7 @@ class Variable:
         add_func(self.creater)
         while funcs:
             f = funcs.pop()
-            gys = [output.grad for output in f.outputs]
+            gys = [output().grad for output in f.outputs]
             gxs = f.backward(*gys)
             if not isinstance(gxs, tuple):
                 gxs = (gxs,)
@@ -59,7 +60,7 @@ class Function:
         for output in outputs:
             output.set_creater(self)
         self.inputs = inputs
-        self.outputs = outputs
+        self.outputs = [weakref.ref(output) for output in outputs]
         return outputs if len(outputs) > 1 else outputs[0]
 
     def forward(self, x):
@@ -102,10 +103,6 @@ def square(x):
     return Square()(x)
 
 
-x = Variable(np.array(2.0))
-a = square(x)
-y = add(square(a), square(a))
-y.backward()
-
-print(y.data)
-print(x.grad)
+for i in range(10):
+    x = Variable(np.random.randn(10000))
+    y = square(square(square(x)))
