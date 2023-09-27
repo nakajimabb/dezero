@@ -22,15 +22,41 @@ def no_grad():
 
 
 class Variable:
-    def __init__(self, data):
+    def __init__(self, data, name=None):
         if data is not None:
             if not isinstance(data, np.ndarray):
                 raise TypeError(f"{type(data)} is not supported")
 
         self.data = data
+        self.name = name
         self.grad = None
         self.creater = None
         self.generation = 0
+
+    @property
+    def shape(self):
+        return self.data.shape
+
+    @property
+    def ndim(self):
+        return self.data.ndim
+
+    @property
+    def size(self):
+        return self.data.size
+
+    @property
+    def dtype(self):
+        return self.data.dtype
+
+    def __len__(self):
+        return len(self.data)
+
+    def __repr__(self):
+        if self.data is None:
+            return 'variable (None)'
+        p = str(self.data).replace('\n', '\n' + ' ' * 9)
+        return 'variable(' + p + ')'
 
     def set_creater(self, func):
         self.creater = func
@@ -129,35 +155,13 @@ def square(x):
     return Square()(x)
 
 
-x0 = Variable(np.array(1.0))
-x1 = Variable(np.array(1.0))
-t = add(x0, x1)
-y = add(x0, t)
-y.backward()
+x = Variable(np.array([[1, 2, 3], [4, 5, 6]]))
+print(x.shape)
+print(len(x))
+print(x)
 
-print(y.grad, t.grad)
-print(x0.grad, x1.grad)
+x = Variable(np.array([1, 2, 3]))
+print(x)
 
-# Config.enable_backprop = True
-# x = Variable(np.ones((100, 100, 100)))
-# y = square(square(square(x)))
-# y.backward()
-
-# Config.enable_backprop = False
-# x = Variable(np.ones((100, 100, 100)))
-# y = square(square(square(x)))
-# Config.enable_backprop = True
-
-x = Variable(np.array(2.0))
-y = square(x)
-print(y.creater)
-
-with using_config('enable_backprop', False):
-    x = Variable(np.array(2.0))
-    y = square(x)
-    print(y.creater)
-
-with no_grad():
-    x = Variable(np.array(2.0))
-    y = square(x)
-    print(y.creater)
+x = Variable(None)
+print(x)
