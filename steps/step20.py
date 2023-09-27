@@ -58,6 +58,9 @@ class Variable:
         p = str(self.data).replace('\n', '\n' + ' ' * 9)
         return 'variable(' + p + ')'
 
+    # def __mul__(self, other):
+    #     return mul(self, other)
+
     def set_creater(self, func):
         self.creater = func
         self.generation = func.generation + 1
@@ -137,6 +140,16 @@ class Add(Function):
         return gy, gy
 
 
+class Mul(Function):
+    def forward(self, x0, x1):
+        y = x0 * x1
+        return y
+
+    def backward(self, gy):
+        x0, x1 = self.inputs[0].data, self.inputs[1].data
+        return gy * x1, gy * x0
+
+
 class Square(Function):
     def forward(self, x):
         return x ** 2
@@ -151,17 +164,27 @@ def add(x0, x1):
     return Add()(x0, x1)
 
 
+def mul(x0, x1):
+    return Mul()(x0, x1)
+
+
 def square(x):
     return Square()(x)
 
 
-x = Variable(np.array([[1, 2, 3], [4, 5, 6]]))
-print(x.shape)
-print(len(x))
-print(x)
+Variable.__add__ = add
+Variable.__mul__ = mul
 
-x = Variable(np.array([1, 2, 3]))
-print(x)
 
-x = Variable(None)
-print(x)
+a = Variable(np.array(3.0))
+b = Variable(np.array(2.0))
+c = Variable(np.array(1.0))
+
+# y = add(mul(a, b), c)
+y = a * b + c
+y.backward()
+
+
+print(y)
+print(a.grad)
+print(b.grad)
