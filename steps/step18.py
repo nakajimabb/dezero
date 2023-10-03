@@ -29,11 +29,11 @@ class Variable:
 
         self.data = data
         self.grad = None
-        self.creater = None
+        self.creator = None
         self.generation = 0
 
-    def set_creater(self, func):
-        self.creater = func
+    def set_creator(self, func):
+        self.creator = func
         self.generation = func.generation + 1
 
     def cleargrad(self):
@@ -52,7 +52,7 @@ class Variable:
                 seen_set.add(f)
                 funcs.sort(key=lambda x: x.generation)
 
-        add_func(self.creater)
+        add_func(self.creator)
         while funcs:
             f = funcs.pop()
             gys = [output().grad for output in f.outputs]
@@ -64,8 +64,8 @@ class Variable:
                     x.grad = gx
                 else:
                     x.grad = x.grad + gx
-                if x.creater is not None:
-                    add_func(x.creater)
+                if x.creator is not None:
+                    add_func(x.creator)
 
             if not retain_grad:
                 for y in f.outputs:
@@ -83,7 +83,7 @@ class Function:
         if Config.enable_backprop:
             self.generation = max([x.generation for x in inputs])
             for output in outputs:
-                output.set_creater(self)
+                output.set_creator(self)
             self.inputs = inputs
             self.outputs = [weakref.ref(output) for output in outputs]
 
@@ -150,14 +150,14 @@ print(x0.grad, x1.grad)
 
 x = Variable(np.array(2.0))
 y = square(x)
-print(y.creater)
+print(y.creator)
 
 with using_config('enable_backprop', False):
     x = Variable(np.array(2.0))
     y = square(x)
-    print(y.creater)
+    print(y.creator)
 
 with no_grad():
     x = Variable(np.array(2.0))
     y = square(x)
-    print(y.creater)
+    print(y.creator)

@@ -9,22 +9,22 @@ class Variable:
 
         self.data = data
         self.grad = None
-        self.creater = None
+        self.creator = None
 
-    def set_creater(self, func):
-        self.creater = func
+    def set_creator(self, func):
+        self.creator = func
 
     def backward(self):
         if self.grad is None:
             self.grad = np.ones_like(self.data)
 
-        funcs = [self.creater]
+        funcs = [self.creator]
         while funcs:
             f = funcs.pop()
             x, y = f.input, f.output
             x.grad = f.backward(y.grad)
-            if x.creater is not None:
-                funcs.append(x.creater)
+            if x.creator is not None:
+                funcs.append(x.creator)
 
 
 class Function:
@@ -32,7 +32,7 @@ class Function:
         x = input.data
         y = self.forward(x)
         output = Variable(as_array(y))
-        output.set_creater(self)
+        output.set_creator(self)
         self.input = input
         self.output = output
         return output
@@ -67,13 +67,16 @@ class Exp(Function):
 def square(x):
     return Square()(x)
 
+
 def exp(x):
     return Exp()(x)
+
 
 def as_array(x):
     if np.isscalar(x):
         return np.array(x)
     return x
+
 
 x = Variable(np.array(0.5))
 # a = square(x)

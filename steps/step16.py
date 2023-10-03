@@ -9,11 +9,11 @@ class Variable:
 
         self.data = data
         self.grad = None
-        self.creater = None
+        self.creator = None
         self.generation = 0
 
-    def set_creater(self, func):
-        self.creater = func
+    def set_creator(self, func):
+        self.creator = func
         self.generation = func.generation + 1
 
     def cleargrad(self):
@@ -32,7 +32,7 @@ class Variable:
                 seen_set.add(f)
                 funcs.sort(key=lambda x: x.generation)
 
-        add_func(self.creater)
+        add_func(self.creator)
         while funcs:
             f = funcs.pop()
             gys = [output.grad for output in f.outputs]
@@ -44,8 +44,8 @@ class Variable:
                     x.grad = gx
                 else:
                     x.grad = x.grad + gx
-                if x.creater is not None:
-                    add_func(x.creater)
+                if x.creator is not None:
+                    add_func(x.creator)
 
 
 class Function:
@@ -57,7 +57,7 @@ class Function:
         outputs = [Variable(as_array(y)) for y in ys]
         self.generation = max([x.generation for x in inputs])
         for output in outputs:
-            output.set_creater(self)
+            output.set_creator(self)
         self.inputs = inputs
         self.outputs = outputs
         return outputs if len(outputs) > 1 else outputs[0]

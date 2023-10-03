@@ -9,16 +9,16 @@ class Variable:
 
         self.data = data
         self.grad = None
-        self.creater = None
+        self.creator = None
 
-    def set_creater(self, func):
-        self.creater = func
+    def set_creator(self, func):
+        self.creator = func
 
     def backward(self):
         if self.grad is None:
             self.grad = np.ones_like(self.data)
 
-        funcs = [self.creater]
+        funcs = [self.creator]
         while funcs:
             f = funcs.pop()
             gys = [output.grad for output in f.outputs]
@@ -27,8 +27,8 @@ class Variable:
                 gxs = (gxs,)
             for x, gx in zip(f.inputs, gxs):
                 x.grad = gx
-                if x.creater is not None:
-                    funcs.append(x.creater)
+                if x.creator is not None:
+                    funcs.append(x.creator)
 
 
 class Function:
@@ -39,7 +39,7 @@ class Function:
             ys = (ys,)
         outputs = [Variable(as_array(y)) for y in ys]
         for output in outputs:
-            output.set_creater(self)
+            output.set_creator(self)
         self.inputs = inputs
         self.outputs = outputs
         return outputs if len(outputs) > 1 else outputs[0]
