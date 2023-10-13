@@ -18,7 +18,7 @@ def using_config(name, value):
 
 
 def no_grad():
-    return using_config('enable_backprop', False)
+    return using_config("enable_backprop", False)
 
 
 class Variable:
@@ -56,9 +56,9 @@ class Variable:
 
     def __repr__(self):
         if self.data is None:
-            return 'variable (None)'
-        p = str(self.data).replace('\n', '\n' + ' ' * 9)
-        return 'variable(' + p + ')'
+            return "variable (None)"
+        p = str(self.data).replace("\n", "\n" + " " * 9)
+        return "variable(" + p + ")"
 
     def set_creator(self, func):
         self.creator = func
@@ -84,7 +84,7 @@ class Variable:
         while funcs:
             f = funcs.pop()
             gys = [output().grad for output in f.outputs]
-            with using_config('enable_backprop', create_graph):
+            with using_config("enable_backprop", create_graph):
                 gxs = f.backward(*gys)
                 if not isinstance(gxs, tuple):
                     gxs = (gxs,)
@@ -229,7 +229,7 @@ class Pow(Function):
         return y
 
     def backward(self, gy):
-        x, = self.inputs
+        (x,) = self.inputs
         c = self.c
         return gy * c * x ** (c - 1)
 
