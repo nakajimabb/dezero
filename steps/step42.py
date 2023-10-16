@@ -3,6 +3,7 @@ if "__file__" in globals():
 
     sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import numpy as np
+import matplotlib.pyplot as plt
 from dezero import Variable
 import dezero.functions as F
 from dezero.utils import plot_dot_graph
@@ -41,11 +42,18 @@ for i in range(iters):
     b.data -= lr * b.grad.data
     print(W, b, loss)
 
-    if i == 0:
-        x.name = "x"
-        y.name = "y"
-        y_pred.name = "y_pred"
-        W.name = "W"
-        b.name = "b"
-        loss.name = "loss"
-        plot_dot_graph(loss, verbose=False, to_file="step42.png")
+
+plt.scatter(x.data, y.data, s=10)
+plt.xlabel("x")
+plt.ylabel("y")
+y_pred = predict(x)
+plt.plot(x.data, y_pred.data, color="r")
+plt.show()
+
+x.name = "x"
+y.name = "y"
+y_pred.name = "y_pred"
+W.name = "W"
+b.name = "b"
+loss.name = "loss"
+plot_dot_graph(loss, verbose=False, to_file="step42.png")
