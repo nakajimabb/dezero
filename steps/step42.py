@@ -5,6 +5,7 @@ if "__file__" in globals():
 import numpy as np
 from dezero import Variable
 import dezero.functions as F
+from dezero.utils import plot_dot_graph
 
 np.random.seed(0)
 x = np.random.rand(100, 1)
@@ -39,3 +40,12 @@ for i in range(iters):
     W.data -= lr * W.grad.data
     b.data -= lr * b.grad.data
     print(W, b, loss)
+
+    if i == 0:
+        x.name = "x"
+        y.name = "y"
+        y_pred.name = "y_pred"
+        W.name = "W"
+        b.name = "b"
+        loss.name = "loss"
+        plot_dot_graph(loss, verbose=False, to_file="step42.png")
