@@ -20,8 +20,11 @@ hidden_size = 10
 
 
 model = MLP([hidden_size, 1])
-# optimizer = optimizers.SGD(lr)
-optimizer = optimizers.MomentumSGD(lr, momentum=0.9)
+optimizer = optimizers.SGD(lr)
+# optimizer = optimizers.MomentumSGD(lr, momentum=0.9)
+# optimizer = optimizers.AdaGrad(lr)
+# optimizer = optimizers.RMSProp()
+# optimizer = optimizers.AdaDelta()
 optimizer.setup(model)
 
 for i in range(max_iter):
