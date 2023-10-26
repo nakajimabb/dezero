@@ -1,6 +1,6 @@
 import numpy as np
 from dezero import utils
-from dezero import Function, as_variable
+from dezero import Function, Variable, as_variable, as_array
 
 
 class Sin(Function):
@@ -382,3 +382,11 @@ class Clip(Function):
 
 def clip(x, x_min, x_max):
     return Clip(x_min, x_max)(x)
+
+
+def accuracy(y, t):
+    y, t = as_variable(y), as_variable(t)
+    pred = y.data.argmax(axis=1).reshape(t.shape)
+    result = pred == t.data
+    acc = result.mean()
+    return Variable(as_array(acc))
