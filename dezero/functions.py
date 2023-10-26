@@ -249,11 +249,35 @@ def mean_squared_error_simple(x0, x1):
     return sum(diff**2) / len(diff)
 
 
+class SoftmaxCrossEntropy(Function):
+    # t => label(not one hot vector)
+    def forward(self, x, t):
+        N = x.shape[0]
+        log_z = utils.logsumexp(x, axis=1)
+        log_p = x - log_z
+        log_p = log_p[np.arange(N), t.ravel()]
+        y = -log_p.sum() / np.float32(N)
+        return y
+
+    def backward(self, gy):
+        x, t = self.inputs
+        N, CLS_NUM = x.shape
+        gy *= 1 / N
+        y = softmax(x)
+        t_onehot = np.eye(CLS_NUM, dtype=t.dtype)[t.data]
+        y = (y - t_onehot) * gy
+        return y
+
+
+def softmax_cross_entropy(x, t):
+    return SoftmaxCrossEntropy()(x, t)
+
+
 # t => label(not one hot vector)
 def softmax_cross_entropy_simple(x, t):
     x, t = as_variable(x), as_variable(t)
     N = x.shape[0]
-    p = softmax_simple(x)
+    p = softmax(x)
     p = clip(p, 1e-15, 1.0)  # to avoid log(0)
     log_p = log(p)
     tlog_p = log_p[np.arange(N), t.data]
@@ -309,6 +333,28 @@ def sigmoid_simple(x):
     x = as_variable(x)
     y = 1 / (1 + exp(-x))
     return y
+
+
+class Softmax(Function):
+    def __init__(self, axis=1):
+        self.axis = axis
+
+    def forward(self, x):
+        y = x - x.max(axis=self.axis, keepdims=True)
+        y = np.exp(y)
+        sum_y = y.sum(axis=self.axis, keepdims=True)
+        return y / sum_y
+
+    def backward(self, gy):
+        y = self.outpus[0]()
+        gx = y * gy
+        sumdx = gx.sum(axis=self.axis, keepdims=True)
+        gx -= y * sumdx
+        return gx
+
+
+def softmax(x, axis=1):
+    return Softmax(axis)(x)
 
 
 def softmax_simple(x, axis=1):
