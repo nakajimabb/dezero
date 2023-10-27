@@ -27,5 +27,6 @@ else:
     import dezero.functions
     import dezero.layers
     import dezero.utils
+    import dezero.transforms
 
 setup_variable()
