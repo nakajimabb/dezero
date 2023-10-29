@@ -1,3 +1,4 @@
+# step23.py ~ step32.py: True
 is_simple_core = False
 
 if is_simple_core:
@@ -28,5 +29,6 @@ else:
     import dezero.layers
     import dezero.utils
     import dezero.transforms
+    import dezero.cuda
 
 setup_variable()
