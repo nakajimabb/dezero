@@ -1,7 +1,7 @@
 import numpy as np
-from dezero import utils
+import dezero
+from dezero import cuda, utils
 from dezero import Function, Variable, as_variable, as_array
-from dezero import cuda
 
 
 class Sin(Function):
@@ -425,3 +425,16 @@ def accuracy(y, t):
     result = pred == t.data
     acc = result.mean()
     return Variable(as_array(acc))
+
+
+def dropout(x, dropout_ratio=0.5):
+    x = as_variable(x)
+
+    if dezero.Config.train:
+        xp = cuda.get_array_module(x)
+        mask = xp.random.rand(*x.shape) > dropout_ratio
+        scale = xp.array(1.0 - dropout_ratio).astype(x.dtype)
+        y = x * mask / scale
+        return y
+    else:
+        return x
