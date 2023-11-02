@@ -152,5 +152,5 @@ class Conv2d(Layer):
             xp = cuda.get_array_module(x)
             self._init_W(xp)
 
-        y = F.conv2d_simple(x, self.W, self.b, self.stride, self.pad)
+        y = F.conv2d(x, self.W, self.b, self.stride, self.pad)
         return y
